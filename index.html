@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arma dei Carabinieri — ITALIA X</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        @media print {
+            body * { visibility: hidden; }
+            #printable-area, #printable-area * { visibility: visible; }
+            #printable-area { position: absolute; left: 0; top: 0; width: 100%; }
+        }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-800 antialiased h-screen flex flex-col overflow-hidden">
+
+    <!-- BARRA TRICOLORE SUPERIORE -->
+    <div class="h-1.5 w-full flex z-50">
+        <div class="bg-emerald-600 w-1/3"></div>
+        <div class="bg-white w-1/3"></div>
+        <div class="bg-red-600 w-1/3"></div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- SCHERMATA DI LOGIN                           -->
+    <!-- ========================================== -->
+    <div id="login-screen" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/95 backdrop-blur-md">
+        <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl border-t-8 border-red-700 overflow-hidden transform transition-all">
+            <div class="bg-slate-900 text-white p-8 text-center relative">
+                <div class="absolute top-4 left-4 text-red-600 text-3xl bg-white/10 p-2 rounded-xl"><i class="fa-solid fa-shield-halved"></i></div>
+                <h1 class="text-xl font-bold tracking-wider uppercase">Arma dei Carabinieri</h1>
+                <p class="text-xs text-red-500 font-bold mt-1 tracking-widest">ITALIA X — PORTALE OPERATIVO</p>
+            </div>
+            <div class="p-8">
+                <div id="login-error" class="hidden mb-4 p-3 bg-red-100 border border-red-300 text-red-700 rounded-lg text-sm flex items-center gap-2">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                    <span id="login-error-text">Credenziali non valide.</span>
+                </div>
+                <form id="login-form" onsubmit="handleLogin(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Nome Utente o Matricola</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400"><i class="fa-solid fa-user"></i></span>
+                            <input type="text" id="login-user" required class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:border-red-700 text-sm" placeholder="admin">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Password</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400"><i class="fa-solid fa-lock"></i></span>
+                            <input type="password" id="login-pass" required class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:border-red-700 text-sm" placeholder="••••••••">
+                        </div>
+                    </div>
+                    <button type="submit" class="w-full bg-red-700 hover:bg-red-800 text-white font-medium py-2.5 rounded-lg transition-colors shadow-lg shadow-red-700/20 text-sm cursor-pointer">
+                        Autenticazione Sicura
+                    </button>
+                </form>
+                <div class="mt-6 text-center text-xs text-slate-400 border-t pt-4">
+                    Area riservata
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- APPLICAZIONE PRINCIPALE                      -->
+    <!-- ========================================== -->
+    <div id="app-container" class="hidden flex h-screen w-full overflow-hidden">
+        
+        <!-- SIDEBAR -->
+        <aside class="w-64 bg-slate-900 text-slate-300 flex flex-col border-r border-slate-800 shadow-xl z-20">
+            <!-- Brand -->
+            <div class="p-5 bg-slate-950 flex items-center gap-3 border-b border-slate-800">
+                <div class="bg-gradient-to-br from-red-600 to-red-800 text-white w-10 h-10 rounded-xl flex items-center justify-center font-bold text-lg shadow-lg shadow-red-900/30">
+                    <i class="fa-solid fa-shield-halved"></i>
+                </div>
+                <div>
+                    <h2 class="font-bold text-white text-sm tracking-wide">ITALIA X</h2>
+                    <span class="text-[10px] text-red-500 font-bold uppercase tracking-wider">Arma dei Carabinieri</span>
+                </div>
+            </div>
+
+            <!-- Menu -->
+            <nav class="flex-1 overflow-y-auto px-3 py-4 space-y-1.5 text-sm">
+                <a href="#" onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg bg-red-700 text-white font-medium transition-colors shadow-sm">
+                    <i class="fa-solid fa-chart-pie w-5 text-center"></i> Dashboard
+                </a>
+                <a href="#" onclick="switchTab('brogliaccio')" id="nav-brogliaccio" class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-800 hover:text-white transition-colors">
+                    <i class="fa-solid fa-book-open w-5 text-center"></i> Brogliaccio Servizi
+                </a>
+                <a href="#" onclick="switchTab('verbali')" id="nav-verbali" class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-800 hover:text-white transition-colors">
+                    <i class="fa-solid fa-file-invoice w-5 text-center"></i> Registro Verbali
+                </a>
+                <a href="#" onclick="switchTab('bolo')" id="nav-bolo" class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-800 hover:text-white transition-colors">
+                    <i class="fa-solid fa-user-secret w-5 text-center"></i> Ricercati (BOLO)
+                </a>
+                <a href="#" onclick="switchTab('ruolino')" id="nav-ruolino" class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-800 hover:text-white transition-colors">
+                    <i class="fa-solid fa-users-rectangle w-5 text-center"></i> Ruolino Personale
+                </a>
+                <a href="#" onclick="switchTab('ordini')" id="nav-ordini" class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-800 hover:text-white transition-colors">
+                    <i class="fa-solid fa-bullhorn w-5 text-center"></i> Ordini di Servizio
+                </a>
+
+                <!-- Sezioni Riservate Admin -->
+                <div id="admin-nav-section" class="hidden pt-3 mt-3 border-t border-slate-800 space-y-1.5">
+                    <div class="px-3 text-[10px] uppercase font-bold text-slate-500 tracking-wider">Amministrazione</div>
+                    <a href="#" onclick="switchTab('admin')" id="nav-admin" class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-800 hover:text-amber-400 transition-colors">
+                        <i class="fa-solid fa-user-shield w-5 text-center"></i> Gestione Utenti
+                    </a>
+                    <a href="#" onclick="switchTab('audit')" id="nav-audit" class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-800 hover:text-amber-400 transition-colors">
+                        <i class="fa-solid fa-list-check w-5 text-center"></i> Log di Sistema
+                    </a>
+                </div>
+            </nav>
+
+            <!-- Profilo basso -->
+            <div class="p-4 bg-slate-950 border-t border-slate-800 flex items-center justify-between">
+                <div class="flex items-center gap-3 overflow-hidden">
+                    <div class="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center text-slate-300 font-bold text-xs border border-slate-700">
+                        <i class="fa-solid fa-user"></i>
+                    </div>
+                    <div class="truncate">
+                        <p id="current-user-name" class="text-xs font-medium text-white truncate">Utente</p>
+                        <p id="current-user-role" class="text-[10px] text-slate-400 uppercase">Grado</p>
+                    </div>
+                </div>
+                <button onclick="logout()" title="Disconnetti" class="text-slate-400 hover:text-red-400 p-1.5 transition-colors cursor-pointer">
+                    <i class="fa-solid fa-power-off text-sm"></i>
+                </button>
+            </div>
+        </aside>
+
+        <!-- AREA CONTENUTO -->
+        <main class="flex-1 flex flex-col overflow-hidden bg-slate-100">
+            
+            <header class="bg-white border-b border-slate-200 h-16 px-6 flex items-center justify-between shadow-xs z-10">
+                <div class="flex items-center gap-4">
+                    <h3 id="page-title" class="text-lg font-bold text-slate-800">Dashboard Operativa</h3>
+                </div>
+                <div class="flex items-center gap-3">
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400"><i class="fa-solid fa-search text-xs"></i></span>
+                        <input type="text" id="global-search" oninput="filterData(this.value)" placeholder="Cerca rapidamente..." class="pl-9 pr-4 py-1.5 bg-slate-50 border border-slate-200 rounded-full text-xs focus:outline-none focus:border-red-700 w-48 md:w-64 transition-all">
+                    </div>
+                    <button onclick="window.print()" title="Stampa / Esporta" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-full text-xs font-medium transition-colors cursor-pointer flex items-center gap-1.5">
+                        <i class="fa-solid fa-print"></i> <span class="hidden md:inline">Stampa</span>
+                    </button>
+                    <span class="text-xs bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-full font-medium text-emerald-700 flex items-center gap-1.5">
+                        <i class="fa-solid fa-circle text-emerald-500 text-[8px] animate-pulse"></i> Connesso
+                    </span>
+                </div>
+            </header>
+
+            <div id="printable-area" class="flex-1 overflow-y-auto p-6 space-y-6">
+
+                <!-- 1. DASHBOARD -->
+                <div id="tab-dashboard" class="tab-content space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs flex items-center justify-between">
+                            <div>
+                                <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Militari a Ruolino</p>
+                                <h4 id="stat-militari" class="text-3xl font-extrabold text-slate-800 mt-1">0</h4>
+                            </div>
+                            <div class="w-12 h-12 bg-red-50 text-red-700 rounded-2xl flex items-center justify-center text-xl shadow-inner"><i class="fa-solid fa-users"></i></div>
+                        </div>
+                        <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs flex items-center justify-between">
+                            <div>
+                                <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Brogliacci Oggi</p>
+                                <h4 id="stat-brogliacci" class="text-3xl font-extrabold text-slate-800 mt-1">0</h4>
+                            </div>
+                            <div class="w-12 h-12 bg-blue-50 text-blue-700 rounded-2xl flex items-center justify-center text-xl shadow-inner"><i class="fa-solid fa-book-open"></i></div>
+                        </div>
+                        <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs flex items-center justify-between">
+                            <div>
+                                <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Verbali Eseguiti</p>
+                                <h4 id="stat-verbali" class="text-3xl font-extrabold text-slate-800 mt-1">0</h4>
+                            </div>
+                            <div class="w-12 h-12 bg-amber-50 text-amber-700 rounded-2xl flex items-center justify-center text-xl shadow-inner"><i class="fa-solid fa-file-invoice"></i></div>
+                        </div>
+                        <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs flex items-center justify-between">
+                            <div>
+                                <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Ricercati Attivi</p>
+                                <h4 id="stat-bolo" class="text-3xl font-extrabold text-slate-800 mt-1">0</h4>
+                            </div>
+                            <div class="w-12 h-12 bg-purple-50 text-purple-700 rounded-2xl flex items-center justify-center text-xl shadow-inner"><i class="fa-solid fa-user-secret"></i></div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div class="lg:col-span-2 bg-white rounded-2xl border border-slate-200/80 p-6 shadow-xs space-y-4">
+                            <div class="flex items-center justify-between border-b pb-3">
+                                <h4 class="text-base font-bold text-slate-800 flex items-center gap-2"><i class="fa-solid fa-circle-info text-red-700"></i> Informazioni Operative</h4>
+                                <span class="text-xs text-slate-400">Server FiveM RP</span>
+                            </div>
+                            <p class="text-sm text-slate-600 leading-relaxed">
+                                Benvenuto nel portale ufficiale integrato dell'Arma dei Carabinieri. Utilizza questo sistema per annotare con precisione i servizi di pattuglia, emettere sanzioni pecuniarie e detentive, gestire i mandati di cattura e consultare l'organigramma del personale in servizio.
+                            </p>
+                            <div class="grid grid-cols-2 gap-4 pt-2">
+                                <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200">
+                                    <span class="text-[10px] font-bold text-red-700 uppercase">Pronto Intervento</span>
+                                    <h5 class="font-bold text-slate-800 text-sm mt-0.5">Centrale Operativa 112</h5>
+                                </div>
+                                <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200">
+                                    <span class="text-[10px] font-bold text-blue-700 uppercase">Stato Reparto</span>
+                                    <h5 class="font-bold text-slate-800 text-sm mt-0.5">Pattuglie in Territorio</h5>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-slate-900 text-white rounded-2xl p-6 shadow-lg flex flex-col justify-between border-t-4 border-red-600">
+                            <div>
+                                <span class="text-[10px] font-bold text-red-500 uppercase tracking-wider">Credenziali & Profilo</span>
+                                <h4 id="dash-user-title" class="text-lg font-bold mt-1">Ufficiale</h4>
+                                <p class="text-xs text-slate-400 mt-2">Accesso protetto e crittografato tramite database locale di reparto.</p>
+                            </div>
+                            <div class="pt-6 border-t border-slate-800 mt-4">
+                                <div class="flex items-center justify-between text-xs text-slate-400">
+                                    <span>Versione Portale</span>
+                                    <span class="text-white font-mono font-bold">v3.5.0-PRO</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. BROGLIACCIO -->
+                <div id="tab-brogliaccio" class="tab-content hidden space-y-6">
+                    <div class="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-xs">
+                        <h4 class="text-base font-bold text-slate-800 mb-4 flex items-center gap-2"><i class="fa-solid fa-plus-circle text-red-700"></i> Registra Nuovo Servizio</h4>
+                        <form onsubmit="addBrogliaccio(event)" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Data / Ora</label>
+                                <input type="text" id="b-data" required class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm" placeholder="Es. 11/11 15:30">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Operatore</label>
+                                <input type="text" id="b-operatore" required class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm" placeholder="Grado e Cognome">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Unità / Mezzo</label>
+                                <input type="text" id="b-mezzo" required class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm" placeholder="Es. Gazzella 1">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Attività</label>
+                                <input type="text" id="b-attivita" required class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm" placeholder="Es. Pattuglia / P.D.B.">
+                            </div>
+                            <div class="md:col-span-3">
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Note Operative</label>
+                                <input type="text" id="b-note" required class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm" placeholder="Annotazioni di servizio...">
+                            </div>
+                            <div class="flex items-end">
+                                <button type="submit" class="w-full bg-red-700 hover:bg-red-800 text-white font-medium py-2 rounded-lg text-sm transition-colors cursor-pointer shadow-md shadow-red-700/20">Registra</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="bg-white rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs">
+                        <div class="p-4 bg-slate-50 border-b border-slate-200 font-bold text-slate-700 text-sm">Cronologia Servizi</div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse text-sm">
+                                <thead>
+                                    <tr class="bg-slate-100 text-slate-600 text-xs border-b border-slate-200 uppercase">
+                                        <th class="p-3">Data/Ora</th>
+                                        <th class="p-3">Operatore</th>
+                                        <th class="p-3">Unità</th>
+                                        <th class="p-3">Attività</th>
+                                        <th class="p-3">Note Operative</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="brogliaccio-table-body" class="divide-y divide-slate-200"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. VERBALI -->
+                <div id="tab-verbali" class="tab-content hidden space-y-6">
+                    <div class="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-xs">
+                        <h4 class="text-base font-bold text-slate-800 mb-4 flex items-center gap-2"><i class="fa-solid fa-file-pen text-red-700"></i> Emetti Verbale di Polizia Giudiziaria</h4>
+                        <form onsubmit="addVerbale(event)" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Soggetto Sanzionato</label>
+                                <input type="text" id="v-soggetto" required class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm" placeholder="Nome e Cognome">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Reato Contestato</label>
+                                <input type="text" id="v-reato" required class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm" placeholder="Articolo / Violazione">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Sanzione Pecuniaria (€)</label>
+                                <input type="number" id="v-multa" required class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm" placeholder="1500">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Detenzione</label>
+                                <input type="text" id="v-detenzione" required class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm" placeholder="Es. 20 mesi o 0">
+                            </div>
+                            <div class="md:col-span-2">
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Sequestri & Note</label>
+                                <input type="text" id="v-sequestri" required class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm" placeholder="Materiale sequestrato o dinamica">
+                            </div>
+                            <div class="md:col-span-3 flex justify-end">
+                                <button type="submit" class="bg-red-700 hover:bg-red-800 text-white font-medium px-6 py-2 rounded-lg text-sm transition-colors cursor-pointer shadow-md shadow-red-700/20">Conferma Verbale</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="bg-white rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs">
+                        <div class="p-4 bg-slate-50 border-b border-slate-200 font-bold text-slate-700 text-sm">Registro Verbali Emessi</div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse text-sm">
+                                <thead>
+                                    <tr class="bg-slate-100 text-slate-600 text-xs border-b border-slate-200 uppercase">
+                                        <th class="p-3">N. Verbale</th>
+                                        <th class="p-3">Soggetto</th>
+                                        <th class="p-3">Reato</th>
+                                        <th class="p-3">Multa</th>
+                                        <th class="p-3">Detenzione</th>
+                                        <th class="p-3">Sequestri / Note</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="verbali-table-body" class="divide-y divide-slate-200"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4. BOLO -->
+                <div id="tab-bolo" class="tab-content hidden space-y-6">
+                    <div class="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-xs">
+                        <h4 class="text-base font-bold text-slate-800 mb-4 flex items-center gap-2"><i class="fa-solid fa-triangle-exclamation text-red-700"></i> Inserisci Mandato / BOLO Attivo</h4>
+                        <form onsubmit="addBolo(event)" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Soggetto</label>
+                                <input type="text" id="bo-nome" required class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm" placeholder="Nome e Cognome">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Motivo</label>
+                                <input type="text" id="bo-motivo" required class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm" placeholder="Motivo ricerca">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Veicolo Collegato</label>
+                                <input type="text" id="bo-veicolo" required class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm" placeholder="Modello o Targa">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Pericolosità</label>
+                                <select id="bo-pericolo" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm">
+                                    <option value="Bassa">Bassa</option>
+                                    <option value="Media">Media</option>
+                                    <option value="Alta (Armato)">Alta (Armato)</option>
+                                </select>
+                            </div>
+                            <div class="md:col-span-4 flex justify-end">
+                                <button type="submit" class="bg-red-700 hover:bg-red-800 text-white font-medium px-6 py-2 rounded-lg text-sm transition-colors cursor-pointer shadow-md shadow-red-700/20">Emetti BOLO</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="bg-white rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs">
+                        <div class="p-4 bg-slate-50 border-b border-slate-200 font-bold text-slate-700 text-sm">Soggetti Ricercati sul Territorio</div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse text-sm">
+                                <thead>
+                                    <tr class="bg-slate-100 text-slate-600 text-xs border-b border-slate-200 uppercase">
+                                        <th class="p-3">Soggetto</th>
+                                        <th class="p-3">Motivo</th>
+                                        <th class="p-3">Veicolo</th>
+                                        <th class="p-3">Pericolosità</th>
+                                        <th class="p-3 text-center">Azioni</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="bolo-table-body" class="divide-y divide-slate-200"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 5. RUOLINO -->
+                <div id="tab-ruolino" class="tab-content hidden space-y-6">
+                    <div class="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-xs">
+                        <h4 class="text-base font-bold text-slate-800 mb-4 flex items-center gap-2"><i class="fa-solid fa-user-plus text-red-700"></i> Aggiungi Militare a Ruolino</h4>
+                        <form onsubmit="addMilitare(event)" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Grado</label>
+                                <select id="m-grado" required class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm">
+                                    <option value="Generale di Corpo d'Armata Comandante Generale">Generale di Corpo d'Armata Comandante Generale</option>
+                                    <option value="Generale di Corpo d'Armata">Generale di Corpo d'Armata</option>
+                                    <option value="Generale di Corpo d'Armata Vice Comandante Generale">Generale di Corpo d'Armata Vice Comandante Generale</option>
+                                    <option value="Generale di Corpo d'Armata Ex Vice Comandante Generale">Generale di Corpo d'Armata Ex Vice Comandante Generale</option>
+                                    <option value="Generale di Divisione con Incarichi al Grado Superiore">Generale di Divisione con Incarichi al Grado Superiore</option>
+                                    <option value="Generale di Divisione">Generale di Divisione</option>
+                                    <option value="Generale di Divisione a titolo Onorifico">Generale di Divisione a titolo Onorifico</option>
+                                    <option value="Generale di Brigata con Incarichi al Grado Superiore">Generale di Brigata con Incarichi al Grado Superiore</option>
+                                    <option value="Generale di Brigata">Generale di Brigata</option>
+                                    <option value="Colonnello con Incarichi al Grado Superiore">Colonnello con Incarichi al Grado Superiore</option>
+                                    <option value="Colonnello con Incarichi di Comando">Colonnello con Incarichi di Comando</option>
+                                    <option value="Colonnello">Colonnello</option>
+                                    <option value="Tenente Colonnello con Incarichi al Grado Superiore">Tenente Colonnello con Incarichi al Grado Superiore</option>
+                                    <option value="Tenente Colonnello con Incarichi di Comando">Tenente Colonnello con Incarichi di Comando</option>
+                                    <option value="Tenente Colonnello">Tenente Colonnello</option>
+                                    <option value="Maggiore con Incarichi al Grado Superiore">Maggiore con Incarichi al Grado Superiore</option>
+                                    <option value="Maggiore con Incarichi di Comando">Maggiore con Incarichi di Comando</option>
+                                    <option value="Maggiore">Maggiore</option>
+                                    <option value="Primo Capitano">Primo Capitano</option>
+                                    <option value="Capitano">Capitano</option>
+                                    <option value="Tenente comandante titolare di compagnia o di squadrone">Tenente comandante titolare di compagnia o di squadrone</option>
+                                    <option value="Tenente">Tenente</option>
+                                    <option value="Sottotenente">Sottotenente</option>
+                                    <option value="Luogotenente “Carica Speciale”">Luogotenente “Carica Speciale”</option>
+                                    <option value="Luogotenente">Luogotenente</option>
+                                    <option value="Maresciallo Maggiore">Maresciallo Maggiore</option>
+                                    <option value="Maresciallo Capo">Maresciallo Capo</option>
+                                    <option value="Maresciallo Ordinario">Maresciallo Ordinario</option>
+                                    <option value="Maresciallo">Maresciallo</option>
+                                    <option value="Brigadiere Capo Qualifica Speciale">Brigadiere Capo Qualifica Speciale</option>
+                                    <option value="Brigadiere Capo">Brigadiere Capo</option>
+                                    <option value="Brigadiere">Brigadiere</option>
+                                    <option value="Vicebrigadiere">Vicebrigadiere</option>
+                                    <option value="Appuntato Scelto “Qualifica Speciale”">Appuntato Scelto “Qualifica Speciale”</option>
+                                    <option value="Appuntato Scelto">Appuntato Scelto</option>
+                                    <option value="Appuntato">Appuntato</option>
+                                    <option value="Carabiniere Scelto">Carabiniere Scelto</option>
+                                    <option value="Carabiniere">Carabiniere</option>
+                                    <option value="Allievo Ufficiale">Allievo Ufficiale</option>
+                                    <option value="Allievo Ufficiale in Ferma Prefissata">Allievo Ufficiale in Ferma Prefissata</option>
+                                    <option value="Allievo Maresciallo">Allievo Maresciallo</option>
+                                    <option value="Allievo Sovrintendente">Allievo Sovrintendente</option>
+                                    <option value="Allievo Carabiniere">Allievo Carabiniere</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Nome e Cognome</label>
+                                <input type="text" id="m-nome" required class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm" placeholder="Es. Angelo Anastasio">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Matricola</label>
+                                <input type="text" id="m-matricola" required class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm" placeholder="Es. CC-01">
+                            </div>
+                            <div class="flex items-end">
+                                <button type="submit" class="w-full bg-red-700 hover:bg-red-800 text-white font-medium py-2 rounded-lg text-sm transition-colors cursor-pointer shadow-md shadow-red-700/20">Arruola</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="bg-white rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs">
+                        <div class="p-4 bg-slate-50 border-b border-slate-200 font-bold text-slate-700 text-sm">Organigramma Reparto</div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse text-sm">
+                                <thead>
+                                    <tr class="bg-slate-100 text-slate-600 text-xs border-b border-slate-200 uppercase">
+                                        <th class="p-3">Matricola</th>
+                                        <th class="p-3">Grado</th>
+                                        <th class="p-3">Militare</th>
+                                        <th class="p-3 text-center">Azioni</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="ruolino-table-body" class="divide-y divide-slate-200"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 6. ORDINI DI SERVIZIO -->
+                <div id="tab-ordini" class="tab-content hidden space-y-6">
+                    <!-- Form Creazione Nuovo Ordine (Visibile solo Admin) -->
+                    <div id="admin-ordine-form-container" class="hidden bg-white rounded-2xl border border-slate-200/80 p-6 shadow-xs">
+                        <h4 class="text-base font-bold text-slate-800 mb-4 flex items-center gap-2"><i class="fa-solid fa-bullhorn text-red-700"></i> Pubblica Nuovo Ordine / Direttiva</h4>
+                        <form onsubmit="addOrdine(event)" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Titolo dell'Ordine</label>
+                                <input type="text" id="o-titolo" required class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm" placeholder="Es. Direttiva sui Posti di Blocco">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Firma / Autorità Emittente</label>
+                                <select id="o-firma" required class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm">
+                                    <option value="Comando Provinciale Carabinieri">Comando Provinciale Carabinieri</option>
+                                    <option value="Comando Compagnia Carabinieri">Comando Compagnia Carabinieri</option>
+                                    <option value="Comando Legione Carabinieri">Comando Legione Carabinieri</option>
+                                    <option value="Stazione Carabinieri Territoriale">Stazione Carabinieri Territoriale</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Data</label>
+                                <input type="text" id="o-data" required class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm" placeholder="Es. 11 Novembre 2026">
+                            </div>
+                            <div class="md:col-span-3">
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Contenuto e Direttive</label>
+                                <textarea id="o-testo" required rows="3" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm" placeholder="Scrivi qui il testo dell'ordine di servizio..."></textarea>
+                            </div>
+                            <div class="md:col-span-3 flex justify-end">
+                                <button type="submit" class="bg-red-700 hover:bg-red-800 text-white font-medium px-6 py-2 rounded-lg text-sm transition-colors cursor-pointer shadow-md">Pubblica in Bacheca</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Elenco Ordini Dinamico -->
+                    <div id="ordini-container" class="space-y-6"></div>
+                </div>
+
+                <!-- 7. GESTIONE UTENTI (ADMIN) -->
+                <div id="tab-admin" class="tab-content hidden space-y-6">
+                    <div class="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-xs">
+                        <h4 id="form-user-title" class="text-base font-bold text-slate-800 mb-4 flex items-center gap-2">
+                            <i class="fa-solid fa-user-shield text-amber-600"></i> <span id="form-user-action-text">Crea Nuove Credenziali di Accesso</span>
+                        </h4>
+                        <form onsubmit="saveUser(event)" class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                            <input type="hidden" id="u-edit-index" value="">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Username</label>
+                                <input type="text" id="u-user" required class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm" placeholder="rossi.m">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Password</label>
+                                <input type="text" id="u-pass" required class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm" placeholder="Password">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Nome e Grado</label>
+                                <input type="text" id="u-name" required class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm" placeholder="M. Rossi">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Ruolo / Permessi</label>
+                                <select id="u-role" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm">
+                                    <option value="user">Operatore (User)</option>
+                                    <option value="admin">Amministratore (Admin)</option>
+                                </select>
+                            </div>
+                            <div class="flex items-end gap-2">
+                                <button type="submit" id="u-btn-submit" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-medium py-2 rounded-lg text-sm transition-colors cursor-pointer shadow-md">Salva</button>
+                                <button type="button" id="u-btn-cancel" onclick="resetUserForm()" class="hidden bg-slate-200 hover:bg-slate-300 text-slate-700 font-medium px-3 py-2 rounded-lg text-sm transition-colors cursor-pointer">Annulla</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-xs flex items-center justify-between">
+                        <div>
+                            <h4 class="font-bold text-slate-800 text-sm">Backup & Ripristino Dati</h4>
+                            <p class="text-xs text-slate-500 mt-0.5">Salva o ricarica il database locale del registro.</p>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="exportData()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs px-4 py-2 rounded-lg font-medium transition-colors cursor-pointer"><i class="fa-solid fa-download"></i> Esporta JSON</button>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs">
+                        <div class="p-4 bg-slate-50 border-b border-slate-200 font-bold text-slate-700 text-sm">Utenti Registrati al Sistema</div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse text-sm">
+                                <thead>
+                                    <tr class="bg-slate-100 text-slate-600 text-xs border-b border-slate-200 uppercase">
+                                        <th class="p-3">Username</th>
+                                        <th class="p-3">Nome / Grado</th>
+                                        <th class="p-3">Ruolo</th>
+                                        <th class="p-3 text-center">Azioni</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="users-table-body" class="divide-y divide-slate-200"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 8. LOG DI SISTEMA (ADMIN) -->
+                <div id="tab-audit" class="tab-content hidden space-y-6">
+                    <div class="bg-white rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs">
+                        <div class="p-4 bg-slate-50 border-b border-slate-200 font-bold text-slate-700 text-sm flex justify-between items-center">
+                            <span>Cronologia Modifiche & Operazioni (Riservato Admin)</span>
+                            <button onclick="clearLogs()" class="text-xs bg-red-100 hover:bg-red-200 text-red-700 px-3 py-1.5 rounded-lg transition-colors cursor-pointer">Svuota Log</button>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse text-sm">
+                                <thead>
+                                    <tr class="bg-slate-100 text-slate-600 text-xs border-b border-slate-200 uppercase">
+                                        <th class="p-3">Data / Ora</th>
+                                        <th class="p-3">Utente</th>
+                                        <th class="p-3">Azione Eseguita</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="audit-table-body" class="divide-y divide-slate-200"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- TOAST NOTIFICATION POPUP -->
+    <div id="toast" class="fixed bottom-6 right-6 z-50 transform translate-y-20 opacity-0 transition-all duration-300 bg-slate-900 text-white px-5 py-3 rounded-xl shadow-2xl flex items-center gap-3 border-l-4 border-emerald-500 text-sm">
+        <i class="fa-solid fa-circle-check text-emerald-400 text-lg"></i>
+        <span id="toast-message">Operazione completata con successo.</span>
+    </div>
+
+    <!-- SCRIPT LOGICA COMPLETA -->
+    <script>
+        const defaultUsers = [
+            { username: "admin", pass: "admin123", name: "Magg. Angelo Anastasio", role: "admin" }
+        ];
+
+        let users = JSON.parse(localStorage.getItem('cc_users')) || defaultUsers;
+        let currentUser = JSON.parse(localStorage.getItem('cc_current_user')) || null;
+
+        let brogliaccio = JSON.parse(localStorage.getItem('cc_brogliaccio')) || [];
+        let verbali = JSON.parse(localStorage.getItem('cc_verbali')) || [];
+        let bolo = JSON.parse(localStorage.getItem('cc_bolo')) || [];
+        let ruolino = JSON.parse(localStorage.getItem('cc_ruolino')) || [
+            { id: 1, grado: "Maggiore", nome: "Angelo Anastasio", matricola: "CC-01" }
+        ];
+        let auditLogs = JSON.parse(localStorage.getItem('cc_audit_logs')) || [];
+        let ordini = JSON.parse(localStorage.getItem('cc_ordini')) || [
+            {
+                id: 1,
+                titolo: "Direttive sui Posti di Blocco e Controllo Territoriale",
+                firma: "Comando Provinciale Carabinieri",
+                data: "11 Novembre 2026",
+                testo: "Si ricorda a tutto il personale in forza che durante le attività di pattugliamento lungo le arterie principali è obbligatorio mantenere la massima cautela, procedendo al controllo preventivo delle targhe sospette..."
+            }
+        ];
+
+        window.onload = function() {
+            if (currentUser) {
+                showApp();
+            } else {
+                document.getElementById('login-screen').classList.remove('hidden');
+            }
+        };
+
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            document.getElementById('toast-message').innerText = msg;
+            t.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => {
+                t.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        }
+
+        function handleLogin(e) {
+            e.preventDefault();
+            const uInput = document.getElementById('login-user').value.trim();
+            const pInput = document.getElementById('login-pass').value.trim();
+
+            const found = users.find(u => u.username === uInput && u.pass === pInput);
+            if (found) {
+                currentUser = found;
+                localStorage.setItem('cc_current_user', JSON.stringify(currentUser));
+                logAction("Accesso effettuato al portale");
+                showApp();
+                showToast("Benvenuto, " + currentUser.name);
+            } else {
+                const errDiv = document.getElementById('login-error');
+                errDiv.classList.remove('hidden');
+                document.getElementById('login-error-text').innerText = "Credenziali errate o utente non esistente.";
+            }
+        }
+
+        function logout() {
+            logAction("Disconnessione dal portale");
+            localStorage.removeItem('cc_current_user');
+            currentUser = null;
+            location.reload();
+        }
+
+        function showApp() {
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('app-container').classList.remove('hidden');
+            
+            document.getElementById('current-user-name').innerText = currentUser.name;
+            document.getElementById('current-user-role').innerText = currentUser.role === 'admin' ? 'Amministratore' : 'Operatore';
+            document.getElementById('dash-user-title').innerText = currentUser.name + " (" + (currentUser.role === 'admin' ? 'Amministratore' : 'Operatore') + ")";
+
+            if (currentUser.role === 'admin') {
+                document.getElementById('admin-nav-section').classList.remove('hidden');
+            }
+
+            updateAllTables();
+            updateStats();
+            renderOrdini();
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.nav-link').forEach(el => {
+                el.classList.remove('bg-red-700', 'text-white', 'font-medium', 'shadow-sm');
+            });
+
+            document.getElementById('tab-' + tabId).classList.remove('hidden');
+            document.getElementById('nav-' + tabId).classList.add('bg-red-700', 'text-white', 'font-medium', 'shadow-sm');
+
+            const titles = {
+                'dashboard': 'Dashboard Operativa',
+                'brogliaccio': 'Brogliaccio Servizi di Reparto',
+                'verbali': 'Registro Verbali & Sanzioni',
+                'bolo': 'Soggetti Ricercati & Mandati (BOLO)',
+                'ruolino': 'Organigramma & Ruolino Personale',
+                'ordini': 'Ordini di Servizio & Bacheca',
+                'admin': 'Gestione Utenze e Accessi',
+                'audit': 'Log di Sistema & Tracciamento'
+            };
+            document.getElementById('page-title').innerText = titles[tabId];
+            if (tabId === 'ordini') renderOrdini();
+        }
+
+        function logAction(azione) {
+            if (!currentUser) return;
+            const now = new Date().toLocaleString('it-IT');
+            auditLogs.unshift({
+                data: now,
+                utente: currentUser.name + ' (' + currentUser.username + ')',
+                azione: azione
+            });
+            if (auditLogs.length > 100) auditLogs.pop();
+            localStorage.setItem('cc_audit_logs', JSON.stringify(auditLogs));
+        }
+
+        function clearLogs() {
+            if (confirm("Vuoi davvero svuotare tutta la cronologia dei log?")) {
+                auditLogs = [];
+                localStorage.removeItem('cc_audit_logs');
+                updateAllTables();
+                showToast("Log di sistema svuotati.");
+            }
+        }
+
+        function exportData() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({users, brogliaccio, verbali, bolo, ruolino, ordini}));
+            const dlAnchorElem = document.createElement('a');
+            dlAnchorElem.setAttribute("href", dataStr);
+            dlAnchorElem.setAttribute("download", "italia_x_backup.json");
+            dlAnchorElem.click();
+            showToast("Backup esportato con successo!");
+        }
+
+        function filterData(query) {
+            const q = query.toLowerCase();
+            document.querySelectorAll('tbody tr').forEach(row => {
+                const text = row.innerText.toLowerCase();
+                row.style.display = text.includes(q) ? '' : 'none';
+            });
+        }
+
+        // --- ORDINI DI SERVIZIO ---
+        function addOrdine(e) {
+            e.preventDefault();
+            const titolo = document.getElementById('o-titolo').value;
+            ordini.unshift({
+                id: Date.now(),
+                titolo: titolo,
+                firma: document.getElementById('o-firma').value,
+                data: document.getElementById('o-data').value,
+                testo: document.getElementById('o-testo').value
+            });
+            localStorage.setItem('cc_ordini', JSON.stringify(ordini));
+            logAction("Pubblicato nuovo ordine di servizio: " + titolo);
+            e.target.reset();
+            renderOrdini();
+            showToast("Ordine pubblicato in bacheca.");
+        }
+
+        function removeOrdine(id) {
+            if (confirm("Vuoi eliminare questo ordine di servizio?")) {
+                ordini = ordini.filter(o => o.id !== id);
+                localStorage.setItem('cc_ordini', JSON.stringify(ordini));
+                logAction("Eliminato ordine di servizio ID: " + id);
+                renderOrdini();
+                showToast("Ordine rimosso.");
+            }
+        }
+
+        function renderOrdini() {
+            const container = document.getElementById('ordini-container');
+            if (!container) return;
+            
+            const formContainer = document.getElementById('admin-ordine-form-container');
+            if (formContainer && currentUser && currentUser.role === 'admin') {
+                formContainer.classList.remove('hidden');
+            }
+
+            container.innerHTML = ordini.length ? ordini.map(o => `
+                <div class="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-xs space-y-4 relative">
+                    <div class="flex items-center justify-between border-b pb-3">
+                        <div>
+                            <span class="text-xs font-bold text-red-700 uppercase">Ordine di Servizio Ufficiale</span>
+                            <h4 class="text-base font-bold text-slate-800">${o.titolo}</h4>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="text-xs text-slate-400">${o.data}</span>
+                            ${currentUser && currentUser.role === 'admin' ? `<button onclick="removeOrdine(${o.id})" class="text-xs bg-red-100 hover:bg-red-200 text-red-700 px-2.5 py-1 rounded-lg transition-colors cursor-pointer" title="Elimina Ordine"><i class="fa-solid fa-trash"></i></button>` : ''}
+                        </div>
+                    </div>
+                    <p class="text-sm text-slate-600 leading-relaxed whitespace-pre-line">${o.testo}</p>
+                    <div class="text-xs font-semibold text-slate-500 pt-2 border-t flex justify-between items-center">
+                        <span>${o.firma}</span>
+                        <span class="text-[10px] text-slate-400 font-mono">ITALIA X — REP. CC</span>
+                    </div>
+                </div>
+            `).join('') : `<div class="bg-white rounded-2xl p-6 text-center text-slate-400 border border-slate-200">Nessun ordine di servizio pubblicato in bacheca.</div>`;
+        }
+
+        // --- AZIONI ALTRE ---
+        function addBrogliaccio(e) {
+            e.preventDefault();
+            brogliaccio.unshift({
+                data: document.getElementById('b-data').value,
+                operatore: document.getElementById('b-operatore').value,
+                mezzo: document.getElementById('b-mezzo').value,
+                attivita: document.getElementById('b-attivita').value,
+                note: document.getElementById('b-note').value
+            });
+            localStorage.setItem('cc_brogliaccio', JSON.stringify(brogliaccio));
+            logAction("Inserito nuovo servizio/brogliaccio");
+            e.target.reset();
+            updateAllTables();
+            updateStats();
+            showToast("Servizio registrato nel brogliaccio.");
+        }
+
+        function addVerbale(e) {
+            e.preventDefault();
+            const sog = document.getElementById('v-soggetto').value;
+            const vid = 'VERB-' + Math.floor(1000 + Math.random() * 9000);
+            verbali.unshift({
+                id: vid,
+                soggetto: sog,
+                reato: document.getElementById('v-reato').value,
+                multa: document.getElementById('v-multa').value,
+                detenzione: document.getElementById('v-detenzione').value,
+                sequestri: document.getElementById('v-sequestri').value
+            });
+            localStorage.setItem('cc_verbali', JSON.stringify(verbali));
+            logAction("Emesso verbale " + vid + " a carico di " + sog);
+            e.target.reset();
+            updateAllTables();
+            updateStats();
+            showToast("Verbale emesso con successo.");
+        }
+
+        function addBolo(e) {
+            e.preventDefault();
+            const nome = document.getElementById('bo-nome').value;
+            bolo.unshift({
+                id: Date.now(),
+                nome: nome,
+                motivo: document.getElementById('bo-motivo').value,
+                veicolo: document.getElementById('bo-veicolo').value,
+                pericolo: document.getElementById('bo-pericolo').value
+            });
+            localStorage.setItem('cc_bolo', JSON.stringify(bolo));
+            logAction("Creato mandato BOLO per " + nome);
+            e.target.reset();
+            updateAllTables();
+            updateStats();
+            showToast("Mandato BOLO emesso.");
+        }
+
+        function removeBolo(id) {
+            bolo = bolo.filter(b => b.id !== id);
+            localStorage.setItem('cc_bolo', JSON.stringify(bolo));
+            logAction("Risolto/Chiuso mandato BOLO ID: " + id);
+            updateAllTables();
+            updateStats();
+            showToast("Mandato contrassegnato come risolto.");
+        }
+
+        function addMilitare(e) {
+            e.preventDefault();
+            const nome = document.getElementById('m-nome').value;
+            ruolino.push({
+                id: Date.now(),
+                grado: document.getElementById('m-grado').value,
+                nome: nome,
+                matricola: document.getElementById('m-matricola').value
+            });
+            localStorage.setItem('cc_ruolino', JSON.stringify(ruolino));
+            logAction("Arruolato nuovo militare: " + nome);
+            e.target.reset();
+            updateAllTables();
+            updateStats();
+            showToast("Militare aggiunto a ruolino.");
+        }
+
+        function removeMilitare(id) {
+            ruolino = ruolino.filter(m => m.id !== id);
+            localStorage.setItem('cc_ruolino', JSON.stringify(ruolino));
+            logAction("Rimosso militare dal ruolino ID: " + id);
+            updateAllTables();
+            updateStats();
+            showToast("Militare rimosso.");
+        }
+
+        function saveUser(e) {
+            e.preventDefault();
+            const editIndex = document.getElementById('u-edit-index').value;
+            const u = document.getElementById('u-user').value.trim();
+            const p = document.getElementById('u-pass').value.trim();
+            const n = document.getElementById('u-name').value.trim();
+            const r = document.getElementById('u-role').value;
+
+            if (editIndex === "") {
+                users.push({ username: u, pass: p, name: n, role: r });
+                localStorage.setItem('cc_users', JSON.stringify(users));
+                logAction("Creato nuovo account (" + r + "): " + u);
+                showToast("Account creato con successo.");
+            } else {
+                const idx = parseInt(editIndex);
+                users[idx].username = u;
+                users[idx].pass = p;
+                users[idx].name = n;
+                users[idx].role = r;
+                localStorage.setItem('cc_users', JSON.stringify(users));
+                logAction("Modificato account (" + r + "): " + u);
+                showToast("Account modificato con successo.");
+            }
+
+            resetUserForm();
+            updateAllTables();
+        }
+
+        function editUser(username) {
+            const user = users.find(u => u.username === username);
+            if (!user) return;
+            const idx = users.indexOf(user);
+
+            document.getElementById('u-edit-index').value = idx;
+            document.getElementById('u-user').value = user.username;
+            document.getElementById('u-pass').value = user.pass;
+            document.getElementById('u-name').value = user.name;
+            document.getElementById('u-role').value = user.role || 'user';
+
+            document.getElementById('form-user-action-text').innerText = "Modifica Account: " + user.username;
+            document.getElementById('u-btn-submit').innerText = "Salva Modifiche";
+            document.getElementById('u-btn-cancel').classList.remove('hidden');
+            document.querySelector('#tab-admin').scrollTop = 0;
+        }
+
+        function resetUserForm() {
+            document.getElementById('u-edit-index').value = "";
+            document.getElementById('u-user').value = "";
+            document.getElementById('u-pass').value = "";
+            document.getElementById('u-name').value = "";
+            document.getElementById('u-role').value = "user";
+            document.getElementById('form-user-action-text').innerText = "Crea Nuove Credenziali di Accesso";
+            document.getElementById('u-btn-submit').innerText = "Salva";
+            document.getElementById('u-btn-cancel').classList.add('hidden');
+        }
+
+        function removeUser(username) {
+            if (username === 'admin') return;
+            users = users.filter(u => u.username !== username);
+            localStorage.setItem('cc_users', JSON.stringify(users));
+            logAction("Eliminato account utente: " + username);
+            updateAllTables();
+            showToast("Account eliminato.");
+        }
+
+        function updateAllTables() {
+            document.getElementById('brogliaccio-table-body').innerHTML = brogliaccio.length ? brogliaccio.map(b => `
+                <tr class="hover:bg-slate-50"><td class="p-3 font-medium text-slate-800">${b.data}</td><td class="p-3">${b.operatore}</td><td class="p-3 font-semibold text-slate-700">${b.mezzo}</td><td class="p-3">${b.attivita}</td><td class="p-3 text-slate-600">${b.note}</td></tr>
+            `).join('') : `<tr><td colspan="5" class="p-4 text-center text-slate-400">Nessun servizio registrato.</td></tr>`;
+
+            document.getElementById('verbali-table-body').innerHTML = verbali.length ? verbali.map(v => `
+                <tr class="hover:bg-slate-50"><td class="p-3 font-semibold text-red-700">${v.id}</td><td class="p-3 font-medium text-slate-800">${v.soggetto}</td><td class="p-3">${v.reato}</td><td class="p-3 font-bold text-slate-900">€ ${v.multa}</td><td class="p-3">${v.detenzione}</td><td class="p-3 text-slate-600">${v.sequestri}</td></tr>
+            `).join('') : `<tr><td colspan="6" class="p-4 text-center text-slate-400">Nessun verbale emesso.</td></tr>`;
+
+            document.getElementById('bolo-table-body').innerHTML = bolo.length ? bolo.map(b => `
+                <tr class="hover:bg-slate-50"><td class="p-3 font-bold text-slate-800">${b.nome}</td><td class="p-3">${b.motivo}</td><td class="p-3">${b.veicolo}</td><td class="p-3"><span class="px-2.5 py-1 rounded-full text-xs font-bold ${b.pericolo.includes('Alta') ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-800'}">${b.pericolo}</span></td><td class="p-3 text-center"><button onclick="removeBolo(${b.id})" class="text-xs bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-lg transition-colors cursor-pointer">Risolto</button></td></tr>
+            `).join('') : `<tr><td colspan="5" class="p-4 text-center text-slate-400">Nessun BOLO attivo.</td></tr>`;
+
+            document.getElementById('ruolino-table-body').innerHTML = ruolino.length ? ruolino.map(m => `
+                <tr class="hover:bg-slate-50"><td class="p-3 font-bold text-slate-700">${m.matricola}</td><td class="p-3 text-slate-600">${m.grado}</td><td class="p-3 font-medium text-slate-900">${m.nome}</td><td class="p-3 text-center"><button onclick="removeMilitare(${m.id})" class="text-xs bg-red-100 hover:bg-red-200 text-red-700 px-3 py-1.5 rounded-lg transition-colors cursor-pointer"><i class="fa-solid fa-trash"></i> Rimuovi</button></td></tr>
+            `).join('') : `<tr><td colspan="4" class="p-4 text-center text-slate-400">Nessun militare registrato.</td></tr>`;
+
+            if (currentUser && currentUser.role === 'admin') {
+                document.getElementById('users-table-body').innerHTML = users.map(u => `
+                    <tr class="hover:bg-slate-50">
+                        <td class="p-3 font-bold text-slate-800">${u.username}</td>
+                        <td class="p-3">${u.name}</td>
+                        <td class="p-3"><span class="px-2 py-0.5 rounded text-xs font-semibold ${u.role === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-slate-200 text-slate-700'}">${u.role}</span></td>
+                        <td class="p-3 text-center space-x-2">
+                            <button onclick="editUser('${u.username}')" class="text-xs bg-amber-100 hover:bg-amber-200 text-amber-800 px-3 py-1.5 rounded-lg transition-colors cursor-pointer"><i class="fa-solid fa-pen"></i> Modifica</button>
+                            ${u.username !== 'admin' ? `<button onclick="removeUser('${u.username}')" class="text-xs bg-red-100 hover:bg-red-200 text-red-700 px-3 py-1.5 rounded-lg transition-colors cursor-pointer"><i class="fa-solid fa-trash"></i> Elimina</button>` : '<span class="text-xs text-slate-400">Protetto</span>'}
+                        </td>
+                    </tr>
+                `).join('');
+
+                document.getElementById('audit-table-body').innerHTML = auditLogs.length ? auditLogs.map(l => `
+                    <tr class="hover:bg-slate-50"><td class="p-3 text-xs text-slate-500">${l.data}</td><td class="p-3 font-semibold text-slate-800">${l.utente}</td><td class="p-3 text-slate-700">${l.azione}</td></tr>
+                `).join('') : `<tr><td colspan="3" class="p-4 text-center text-slate-400">Nessuna operazione registrata nei log.</td></tr>`;
+            }
+
+            renderOrdini();
+        }
+
+        function updateStats() {
+            document.getElementById('stat-militari').innerText = ruolino.length;
+            document.getElementById('stat-brogliacci').innerText = brogliaccio.length;
+            document.getElementById('stat-verbali').innerText = verbali.length;
+            document.getElementById('stat-bolo').innerText = bolo.length;
+        }
+    </script>
+</body>
+</html>
