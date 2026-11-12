@@ -196,7 +196,7 @@
                         <div class="lg:col-span-2 bg-white rounded-2xl border border-slate-200/80 p-6 shadow-xs space-y-4">
                             <div class="flex items-center justify-between border-b pb-3">
                                 <h4 class="text-base font-bold text-slate-800 flex items-center gap-2"><i class="fa-solid fa-circle-info text-red-700"></i> Informazioni Operative</h4>
-                                <span class="text-xs text-slate-400">Server FiveM RP</span>
+                                <span class="text-xs text-slate-400">Comando Generale</span>
                             </div>
                             <p class="text-sm text-slate-600 leading-relaxed">
                                 Benvenuto nel portale ufficiale integrato dell'Arma dei Carabinieri. Utilizza questo sistema per annotare con precisione i servizi di pattuglia, emettere sanzioni pecuniarie e detentive, gestire i mandati di cattura e consultare l'organigramma del personale in servizio.
@@ -435,7 +435,7 @@
                             </div>
                             <div>
                                 <label class="block text-xs font-semibold text-slate-600 mb-1">Nome e Cognome</label>
-                                <input type="text" id="m-nome" required class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm" placeholder="Es. Angelo Anastasio">
+                                <input type="text" id="m-nome" required class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm" placeholder="Es. Pippo Bolle">
                             </div>
                             <div>
                                 <label class="block text-xs font-semibold text-slate-600 mb-1">Matricola</label>
@@ -478,6 +478,7 @@
                             <div>
                                 <label class="block text-xs font-semibold text-slate-600 mb-1">Firma / Autorità Emittente</label>
                                 <select id="o-firma" required class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm">
+                                    <option value="Comando Generale Carabinieri">Comando Generale Carabinieri</option>
                                     <option value="Comando Provinciale Carabinieri">Comando Provinciale Carabinieri</option>
                                     <option value="Comando Compagnia Carabinieri">Comando Compagnia Carabinieri</option>
                                     <option value="Comando Legione Carabinieri">Comando Legione Carabinieri</option>
@@ -542,8 +543,10 @@
                             <p class="text-xs text-slate-500 mt-0.5">Salva o ricarica il database locale del registro.</p>
                         </div>
                         <div class="flex gap-2">
-                            <button onclick="exportData()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs px-4 py-2 rounded-lg font-medium transition-colors cursor-pointer"><i class="fa-solid fa-download"></i> Esporta JSON</button>
-                        </div>
+    <input type="file" id="import-file" accept=".json" class="hidden" onchange="importData(event)">
+    <button onclick="document.getElementById('import-file').click()" class="bg-amber-100 hover:bg-amber-200 text-amber-800 text-xs px-4 py-2 rounded-lg font-medium transition-colors cursor-pointer"><i class="fa-solid fa-upload"></i> Importa JSON</button>
+    <button onclick="exportData()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs px-4 py-2 rounded-lg font-medium transition-colors cursor-pointer"><i class="fa-solid fa-download"></i> Esporta JSON</button>
+</div>
                     </div>
 
                     <div class="bg-white rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs">
@@ -734,6 +737,35 @@
             dlAnchorElem.click();
             showToast("Backup esportato con successo!");
         }
+
+        function importData(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const data = JSON.parse(e.target.result);
+            if (confirm("Attenzione: importando il backup sovrascriverai tutti i dati attuali. Vuoi continuare?")) {
+                if (data.users) { users = data.users; localStorage.setItem('cc_users', JSON.stringify(users)); }
+                if (data.brogliaccio) { brogliaccio = data.brogliaccio; localStorage.setItem('cc_brogliaccio', JSON.stringify(brogliaccio)); }
+                if (data.verbali) { verbali = data.verbali; localStorage.setItem('cc_verbali', JSON.stringify(verbali)); }
+                if (data.bolo) { bolo = data.bolo; localStorage.setItem('cc_bolo', JSON.stringify(bolo)); }
+                if (data.ruolino) { ruolino = data.ruolino; localStorage.setItem('cc_ruolino', JSON.stringify(ruolino)); }
+                if (data.ordini) { ordini = data.ordini; localStorage.setItem('cc_ordini', JSON.stringify(ordini)); }
+
+                logAction("Ripristinato backup da file JSON");
+                updateAllTables();
+                updateStats();
+                showToast("Backup ripristinato con successo!");
+            }
+        } catch (err) {
+            alert("Errore: il file selezionato non è un backup valido.");
+        }
+        event.target.value = "";
+    };
+    reader.readAsText(file);
+}
 
         function filterData(query) {
             const q = query.toLowerCase();
